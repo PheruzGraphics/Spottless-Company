@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Spotless Kenya - Professional Cleaning Services</title>
+  <meta name="description"
+    content="Professional cleaning services in Kenya. Home, office, deep cleaning, pest control, and more. Reliable, affordable, and eco-friendly.">
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+</head>
+
+<body>
+  <div id="bookingConfirmation"
+    style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(16,185,129,0.12);z-index:10000;align-items:center;justify-content:center;">
+    <div
+      style="background:#fff;padding:2rem 2.5rem;border-radius:1.5rem;max-width:350px;width:90vw;box-shadow:0 8px 32px rgba(16,185,129,0.18);text-align:center;">
+      <h2 style="color:#10b981;margin-bottom:1rem;">Booking Sent!</h2>
+      <p style="color:#2563eb;font-size:1.1rem;">Thank you for booking with Spotless Cleaners.<br>We will get back to you after your booking request has been processed.</p>
+      <button id="closeBookingConfirmation"
+        style="margin-top:1.5rem;background:#10b981;color:#fff;font-weight:600;padding:0.5rem 1.5rem;border:none;border-radius:0.5rem;cursor:pointer;">Close</button>
+    </div>
+  </div>
+
+  <div id="bookingModal"
+    style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.45);z-index:9999;align-items:center;justify-content:center;">
+    <div
+      style="background:#fff;padding:2rem 2.5rem;border-radius:1.5rem;max-width:400px;width:90vw;box-shadow:0 8px 32px rgba(31,38,135,0.18);position:relative;">
+      <button id="closeBookingModal"
+        style="position:absolute;top:1rem;right:1rem;background:none;border:none;font-size:1.5rem;cursor:pointer;color:#2563eb;">&times;</button>
+      <h2 style="color:#2563eb;text-align:center;margin-bottom:1rem;">Book a Service</h2>
+      <form id="bookingForm">
+        <input type="text" name="name" placeholder="Your Name" required
+          style="width:100%;margin-bottom:0.75rem;padding:0.5rem;border-radius:0.5rem;border:1px solid #e0e7ef;">
+        <input type="text" name="contact" placeholder="Phone or Email" required
+          style="width:100%;margin-bottom:0.75rem;padding:0.5rem;border-radius:0.5rem;border:1px solid #e0e7ef;">
+        <select name="service" required
+          style="width:100%;margin-bottom:0.75rem;padding:0.5rem;border-radius:0.5rem;border:1px solid #e0e7ef;">
+          <option value="">Select Service</option>
+          <option>Home Cleaning</option>
+          <option>Upholstery Cleaning</option>
+          <option>Deep Cleaning</option>
+          <option>Pest Control</option>
+          <option>Move In & Out Cleaning</option>
+          <option>Carpet Cleaning</option>
+        </select>
+        <input type="date" name="date" required
+          style="width:100%;margin-bottom:0.75rem;padding:0.5rem;border-radius:0.5rem;border:1px solid #e0e7ef;">
+        <textarea name="message" placeholder="Additional Details" rows="2"
+          style="width:100%;margin-bottom:1rem;padding:0.5rem;border-radius:0.5rem;border:1px solid #e0e7ef;"></textarea>
+        <div style="display:flex;flex-direction:column;gap:0.5rem;">
+          <button type="button" id="bookWhatsapp"
+            style="background:#25d366;color:#fff;font-weight:600;padding:0.5rem;border:none;border-radius:0.5rem;cursor:pointer;">Book
+            via WhatsApp</button>
+          <button type="button" id="bookInstagram"
+            style="background:#e1306c;color:#fff;font-weight:600;padding:0.5rem;border:none;border-radius:0.5rem;cursor:pointer;">Book
+            via Instagram</button>
+          <button type="button" id="bookFacebook"
+            style="background:#1877f3;color:#fff;font-weight:600;padding:0.5rem;border:none;border-radius:0.5rem;cursor:pointer;">Book
+            via Facebook</button>
+          <button type="button" id="bookEmail"
+            style="background:#2563eb;color:#fff;font-weight:600;padding:0.5rem;border:none;border-radius:0.5rem;cursor:pointer;">Book
+            via Email</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="galleryModal" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.85);z-index:99999;align-items:center;justify-content:center;">
+    <span id="closeGalleryModal" style="position:absolute;top:2rem;right:2rem;font-size:2.5rem;color:#fff;cursor:pointer;">&times;</span>
+    <img id="galleryModalImg" src="" alt="Gallery Image" style="max-width:90vw;max-height:80vh;border-radius:1.5rem;box-shadow:0 8px 32px rgba(0,0,0,0.25);">
+  </div>
+  <!-- replace existing inline scripts with this single safe block -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      // Helper: safe element getter
+      const $ = id => document.getElementById(id);
+
+      // Booking buttons in service cards
+      document.querySelectorAll('.btn.btn-outline.btn-sm').forEach(btn => {
+        btn.addEventListener('click', function (e) {
+          e.preventDefault();
+          const serviceCard = btn.closest('.service-card');
+          const serviceName = serviceCard?.querySelector('.service-title')?.textContent || '';
+          const bookingModal = $('bookingModal');
+          const bookingForm = $('bookingForm');
+          if (bookingModal) {
+            bookingModal.style.display = 'flex';
+            bookingModal.style.alignItems = 'center';
+            bookingModal.style.justifyContent = 'center';
+            if (bookingForm && bookingForm.service) bookingForm.service.value = serviceName;
+          }
+        });
+      });
+
+      // Booking modal close
+      const closeBookingModal = $('closeBookingModal');
+      if (closeBookingModal) closeBookingModal.addEventListener('click', () => { const bm = $('bookingModal'); if (bm) bm.style.display = 'none'; });
+
+      // Booking message builder
+      function getBookingMessage() {
+        const f = $('bookingForm');
+        if (!f) return '';
+        return `Booking Request:%0AName: ${f.name.value}%0AContact: ${f.contact.value}%0AService: ${f.service.value}%0ADate: ${f.date.value}%0AMessage: ${f.message.value}`;
+      }
+
+      // Booking actions
+      const bookWhatsapp = $('bookWhatsapp');
+      if (bookWhatsapp) bookWhatsapp.addEventListener('click', () => {
+        const msg = getBookingMessage();
+        window.open(`https://wa.me/254743413943?text=${encodeURIComponent(msg)}`, '_blank');
+        showBookingConfirmation();
+      });
+
+      const bookInstagram = $('bookInstagram');
+      if (bookInstagram) bookInstagram.addEventListener('click', () => { window.open('https://instagram.com/spotlesscompany.ke', '_blank'); });
+
+      const bookFacebook = $('bookFacebook');
+      if (bookFacebook) bookFacebook.addEventListener('click', () => { window.open('https://facebook.com/thespotlesscompany', '_blank'); });
+
+      const bookEmail = $('bookEmail');
+      if (bookEmail) bookEmail.addEventListener('click', () => {
+        const f = $('bookingForm');
+        if (!f) return;
+        const subject = encodeURIComponent('Spotless Booking Request');
+        const body = encodeURIComponent(`Booking Request:\nName: ${f.name.value}\nContact: ${f.contact.value}\nService: ${f.service.value}\nDate: ${f.date.value}\nMessage: ${f.message.value}`);
+        window.location.href = `mailto:spotlesscleaners.ke@gmail.com?subject=${subject}&body=${body}`;
+        showBookingConfirmation();
+      });
+
+      // Confirmation logic
+      function showBookingConfirmation() {
+        const bm = $('bookingModal'); if (bm) bm.style.display = 'none';
+        const bc = $('bookingConfirmation'); if (bc) bc.style.display = 'flex';
+      }
+      const closeBookingConfirmation = $('closeBookingConfirmation');
+      if (closeBookingConfirmation) closeBookingConfirmation.addEventListener('click', () => { const bc = $('bookingConfirmation'); if (bc) bc.style.display = 'none'; });
+
+      // Gallery modal wiring (safe)
+      const galleryModalImg = $('galleryModalImg');
+      const galleryModal = $('galleryModal');
+      document.querySelectorAll('.service-image img, .gallery-item img').forEach(img => {
+        img.addEventListener('click', function () {
+          const src = img.getAttribute('src') || img.src;
+          if (galleryModal && galleryModalImg) {
+            galleryModalImg.src = src;
+            galleryModal.style.display = 'flex';
+          }
+        });
+      });
+      const closeGalleryModal = $('closeGalleryModal');
+      if (closeGalleryModal) closeGalleryModal.addEventListener('click', () => { const gm = $('galleryModal'); if (gm) gm.style.display = 'none'; });
+
+      // Hero slideshow (only if slides present)
+      const slides = document.querySelectorAll('.hero-slide');
+      if (slides.length > 0) {
+        let current = 0;
+        slides.forEach((s, i) => { s.style.transition = 'opacity 0.6s'; s.style.opacity = i === 0 ? '1' : '0'; });
+        setInterval(() => {
+          slides[current].style.opacity = '0';
+          current = (current + 1) % slides.length;
+          slides[current].style.opacity = '1';
+        }, 3500);
+      }
+
+      // Typing animation (guarded)
+      const overlayText = "Spotless Cleaners brings back the Sparkle with a touch of love";
+      const overlayEl = $('hero-overlay-typed');
+      const cursorEl = $('hero-overlay-cursor');
+      if (overlayEl && cursorEl) {
+        let i = 0;
+        function typeOverlay() {
+          if (i <= overlayText.length) {
+            overlayEl.textContent = overlayText.slice(0, i);
+            i++;
+            setTimeout(typeOverlay, 28);
+          } else {
+            cursorEl.style.animation = 'blink-cursor 1s steps(2) infinite';
+          }
+        }
+        typeOverlay();
+        const style = document.createElement('style');
+        style.textContent = '@keyframes blink-cursor { 0% { opacity: 1; } 49% { opacity: 1; } 50% { opacity: 0; } 100% { opacity: 0; } }';
+        document.head.appendChild(style);
+      }
+    });
+  </script>
+  <!-- Navigation -->
+  <nav class="navbar">
+    <div class="container">
+      <div class="nav-content">
+        <div class="logo">
+          <img src="Images/spotless-logo design.jpg" alt="Spotless Cleaning Services" class="logo-img">
+        </div>
+        <div class="nav-links">
+          <a href="#home" class="nav-link">Home</a>
+          <a href="#about" class="nav-link">About Us</a>
+          <a href="#services" class="nav-link">Services</a>
+          <a href="#testimonials" class="nav-link">Testimonials</a>
+          <a href="#contact" class="nav-link">Contact</a>
+        </div>
+        <div class="nav-cta">
+          <a href="tel:+254743413943" class="btn btn-outline">Call Now</a>
+          <button class="btn btn-primary">Get Quote</button>
+        </div>
+        <button class="mobile-menu-btn" id="mobileMenuBtn">☰</button>
+      </div>
+    </div>
+    <div class="mobile-menu" id="mobileMenu">
+      <div class="mobile-menu-content">
+        <a href="#home" class="mobile-nav-link">Home</a>
+        <a href="#about" class="mobile-nav-link">About Us</a>
+        <a href="#services" class="mobile-nav-link">Services</a>
+        <a href="#testimonials" class="mobile-nav-link">Testimonials</a>
+        <a href="#contact" class="mobile-nav-link">Contact</a>
+        <div class="mobile-cta">
+          <a href="tel:+254743413943" class="btn btn-outline">Call Now</a>
+          <button class="btn btn-primary">Get Quote</button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+
+
+  <!-- Hero Section -->
+  <section class="hero" id="home">
+    <div class="container">
+      <div class="hero-content">
+        <div class="hero-text">
+          <div class="meta-description-visible"
+            style="margin-bottom:1rem;font-size:1.1rem;color:#1e293b;background:rgba(255,255,255,0.85);padding:0.75rem 1.25rem;border-radius:1rem;box-shadow:0 2px 8px rgba(31,38,135,0.08);">
+            <strong style="color:#2563eb;font-size:1.15rem;">Professional cleaning services in Kenya.</strong><br>
+            <span style="color:#0f766e;">Home, Office,Deep cleaning,Pest control, Fumigation and more.</span><br>
+            <span style="color:#f59e0b;">Reliable, affordable, and eco-friendly.</span>
+          </div>
+          <div class="badge">#1 Trusted Cleaning Service in Kenya</div>
+          <h1 class="hero-title">
+            Professional Cleaning Services <span class="text-primary">You Can Trust</span>
+          </h1>
+          <p class="hero-description">
+            Experience spotless results in your office, home and business premises with Kenya's most reliable cleaning service. We make your home and office shine
+            while you focus on what matters most.
+          </p>
+          <div class="trust-indicators">
+            <span class="trust-item"><i class="fa-solid fa-shield"></i> Fully Insured</span>
+            <span class="trust-item"><i class="fa-solid fa-clock"></i> 24/7 Available</span>
+            <span class="trust-item"><i class="fa-solid fa-medal"></i> Licensed & Bonded</span>
+          </div>
+          <div class="hero-cta">
+            <button class="btn btn-primary btn-lg">Get Free Quote</button>
+            <a href="tel:+254743413943" class="btn btn-outline btn-lg">Call: 0743 413 943</a>
+          </div>
+          <div class="social-proof">
+            <span class="stars">⭐⭐⭐⭐⭐</span>
+            <span>4.9/5 from 500+ happy customers</span>
+          </div>
+        </div>
+        <div class="hero-image">
+          <div class="figma-hero-image">
+            <img src="Images/home.jpg" alt="Spotless Cleaning Team" class="hero-img figma-img" loading="lazy">
+            <div class="figma-gradient-overlay"></div>
+            <div class="figma-hero-overlay-text">
+              <span id="hero-overlay-typed"
+                style="background:linear-gradient(90deg,#2563eb,#10b981,#f59e0b);background-clip:text;-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:900;display:inline-block;width:80vw;max-width:1100px;min-width:320px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0.5rem 0;"></span>
+              <span id="hero-overlay-cursor" style="font-weight:900;font-size:2.2rem;color:#2563eb;vertical-align:middle;">|</span>
+            </div>
+             <div class="floating-stat stat-1">
+               <div class="stat-number">500+</div>
+               <div class="stat-label">Happy Clients</div>
+             </div>
+             <div class="floating-stat stat-2">
+               <div class="stat-number">100%</div>
+               <div class="stat-label">Satisfaction</div>
+             </div>
+           </div>
+         </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Services Section -->
+  <section class="services" id="services">
+    <div class="container">
+      <div class="section-header">
+        <div class="badge">Our Services</div>
+        <h2 class="section-title">Professional Cleaning Solutions</h2>
+        <p class="section-description">
+          We offer comprehensive cleaning services tailored to your specific needs, ensuring every corner of your space
+          is spotless.
+        </p>
+      </div>
+      <div class="services-grid">
+        <div class="service-card">
+          <div class="service-image">
+            <img src="Images/house apartment.jpg" alt="Home Cleaning">
+          </div>
+          <div class="service-content">
+            <div class="service-header">
+              <div class="service-icon">🏠</div>
+              <h3 class="service-title">Home Cleaning</h3>
+            </div>
+            <p class="service-description">Complete residential cleaning including kitchen, bathrooms, bedrooms, and
+              living areas.</p>
+            <ul class="service-features">
+              <li>Deep cleaning</li>
+              <li>Regular maintenance</li>
+              <li>Move-in/out cleaning</li>
+            </ul>
+            <div class="service-footer">
+              <span class="service-price">From KES 10,000</span>
+              <button class="btn btn-outline btn-sm">Book Now →</button>
+            </div>
+          </div>
+        </div>
+        <div class="service-card popular">
+          <div class="popular-badge">Most Popular</div>
+          <div class="service-image">
+            <img src="Images/seat vaccuming.png" alt="Upholstery Cleaning">
+          </div>
+          <div class="service-content">
+            <div class="service-header">
+              <div class="service-icon">🛋️</div>
+              <h3 class="service-title">Upholstery Cleaning</h3>
+            </div>
+            <p class="service-description">Expert cleaning for sofas, seats, mattresses, and all upholstered furniture.
+            </p>
+            <ul class="service-features">
+              <li>Deep seat cleaning</li>
+              <li>Stain removal</li>
+              <li>Mattress sanitization</li>
+            </ul>
+            <div class="service-footer">
+              <span class="service-price">From KES 5,000</span>
+              <button class="btn btn-outline btn-sm">Book Now →</button>
+            </div>
+          </div>
+        </div>
+        <div class="service-card">
+          <div class="service-image">
+            <img src="Images/cabro deep.jpg" alt="Deep Cleaning">
+          </div>
+          <div class="service-content">
+            <div class="service-header">
+              <div class="service-icon">✨</div>
+              <h3 class="service-title">Deep Cleaning</h3>
+            </div>
+            <p class="service-description">Intensive cleaning service for heavily soiled areas and spring cleaning.</p>
+            <ul class="service-features">
+              <li>Carpet cleaning</li>
+              <li>Upholstery cleaning</li>
+              <li>Kitchen deep clean</li>
+            </ul>
+            <div class="service-footer">
+              <span class="service-price">From KES 8,000</span>
+              <button class="btn btn-outline btn-sm">Book Now →</button>
+            </div>
+          </div>
+        </div>
+        <div class="service-card">
+          <div class="service-image">
+            <img src="Images/sprayer.png" alt="Pest Control">
+          </div>
+          <div class="service-content">
+            <div class="service-header">
+              <div class="service-icon">🐛</div>
+              <h3 class="service-title">Pest Control</h3>
+            </div>
+            <p class="service-description">Professional pest control and fumigation services for homes and offices.</p>
+            <ul class="service-features">
+              <li>Termite control</li>
+              <li>Rodent control</li>
+              <li>General fumigation</li>
+            </ul>
+            <div class="service-footer">
+              <span class="service-price">From KES 4,000</span>
+              <button class="btn btn-outline btn-sm">Book Now →</button>
+            </div>
+          </div>
+        </div>
+        <div class="service-card">
+          <div class="service-image">
+            <img src="Images/IMG_3667.jpg" alt="Move In & Out Cleaning">
+          </div>
+          <div class="service-content">
+            <div class="service-header">
+              <div class="service-icon">🚚</div>
+              <h3 class="service-title">Move In & Out Cleaning</h3>
+            </div>
+            <p class="service-description">Thorough cleaning for homes and apartments before moving in or after moving
+              out.</p>
+            <ul class="service-features">
+              <li>Deep cleaning of all rooms</li>
+              <li>Kitchen and bathroom sanitization</li>
+              <li>Wall and floor cleaning</li>
+            </ul>
+            <div class="service-footer">
+              <span class="service-price">From KES 2,500</span>
+              <button class="btn btn-outline btn-sm">Book Now →</button>
+            </div>
+          </div>
+        </div>
+        <div class="service-card">
+          <div class="service-image">
+            <img src="Images/carpet vaccum.png" alt="Carpet Cleaning">
+          </div>
+          <div class="service-content">
+            <div class="service-header">
+              <div class="service-icon">🧼</div>
+              <h3 class="service-title">Carpet Cleaning</h3>
+            </div>
+            <p class="service-description">Professional carpet cleaning for homes and offices, removing dirt and
+              allergens.</p>
+            <ul class="service-features">
+              <li>Vacuuming</li>
+              <li>Stain removal</li>
+              <li>Deep shampooing</li>
+            </ul>
+            <div class="service-footer">
+              <span class="service-price">From KES 1,500</span>
+              <button class="btn btn-outline btn-sm">Book Now →</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="services-cta">
+        <button class="btn btn-primary btn-lg">View All Services →</button>
+        <!-- Gallery Section -->
+        <section class="gallery" id="gallery" aria-label="Gallery">
+          <div class="container">
+            <div class="section-header">
+              <div class="badge">Gallery</div>
+              <h2 class="section-title">Our Work & Team</h2>
+              <p class="section-description">See our cleaning team in action and the results we deliver for our clients.</p>
+            </div>
+
+            <!-- Inline gallery styles for quick use; move to style.css if preferred -->
+            <style>
+              .gallery-grid {
+                display: grid;
+                gap: 1rem;
+                grid-template-columns: repeat(4, 1fr);
+                margin-top: 1rem;
+              }
+              .gallery-item img {
+                width: 100%;
+                height: 200px;
+                object-fit: cover;
+                border-radius: 0.6rem;
+                display: block;
+                cursor: pointer;
+                transition: transform .22s ease, box-shadow .22s ease;
+              }
+              .gallery-item img:focus,
+              .gallery-item img:hover {
+                transform: scale(1.03);
+                box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+              }
+              @media (max-width: 992px) { .gallery-grid { grid-template-columns: repeat(3, 1fr); } }
+              @media (max-width: 768px) { .gallery-grid { grid-template-columns: repeat(2, 1fr); } .gallery-item img { height: 170px; } }
+              @media (max-width: 480px) { .gallery-grid { grid-template-columns: 1fr; } .gallery-item img { height: 240px; } }
+            </style>
+
+            <div class="gallery-grid" role="list">
+              <div class="gallery-item" role="listitem"><img loading="lazy" tabindex="0" src="Images/adam house cleaning.jpg" alt="Adam House Cleaning"></div>
+              <div class="gallery-item" role="listitem"><img loading="lazy" tabindex="0" src="Images/cabro deep.jpg" alt="Cabro Deep Cleaning"></div>
+              <div class="gallery-item" role="listitem"><img loading="lazy" tabindex="0" src="Images/carpet vaccum.png" alt="Carpet Vacuum"></div>
+              <div class="gallery-item" role="listitem"><img loading="lazy" tabindex="0" src="Images/carpet vaccum (1).png" alt="Carpet Vacuum 2"></div>
+              <div class="gallery-item" role="listitem"><img loading="lazy" tabindex="0" src="Images/carpeting.png" alt="Carpeting"></div>
+              <div class="gallery-item" role="listitem"><img loading="lazy" tabindex="0" src="Images/home.jpg" alt="Home"></div>
+              <div class="gallery-item" role="listitem"><img loading="lazy" tabindex="0" src="Images/house apartment.jpg" alt="House Apartment"></div>
+              <div class="gallery-item" role="listitem"><img loading="lazy" tabindex="0" src="Images/IMG-20250723-WA0007.jpg" alt="Service 1"></div>
+              <div class="gallery-item" role="listitem"><img loading="lazy" tabindex="0" src="Images/IMG-20250723-WA0008.jpg" alt="Service 2"></div>
+              <div class="gallery-item" role="listitem"><img loading="lazy" tabindex="0" src="Images/IMG-20250723-WA0009.jpg" alt="Service 3"></div>
+              <div class="gallery-item" role="listitem"><img loading="lazy" tabindex="0" src="Images/IMG-20250723-WA0010.jpg" alt="Service 4"></div>
+              <div class="gallery-item" role="listitem"><img loading="lazy" tabindex="0" src="Images/IMG-20250723-WA0011.jpg" alt="Service 5"></div>
+              <div class="gallery-item" role="listitem"><img loading="lazy" tabindex="0" src="Images/IMG-20250723-WA0012.jpg" alt="Service 6"></div>
+              <div class="gallery-item" role="listitem"><img loading="lazy" tabindex="0" src="Images/IMG-20250723-WA0014.jpg" alt="Service 7"></div>
+              <div class="gallery-item" role="listitem"><img loading="lazy" tabindex="0" src="Images/IMG-20250723-WA0016.jpg" alt="Service 8"></div>
+              <div class="gallery-item" role="listitem"><img loading="lazy" tabindex="0" src="Images/IMG-20250725-WA0001.jpg" alt="Service 9"></div>
+              <div class="gallery-item" role="listitem"><img loading="lazy" tabindex="0" src="Images/IMG-20250725-WA0002.jpg" alt="Service 10"></div>
+              <div class="gallery-item" role="listitem"><img loading="lazy" tabindex="0" src="Images/IMG-20250725-WA0003.jpg" alt="Service 11"></div>
+              <div class="gallery-item" role="listitem"><img loading="lazy" tabindex="0" src="Images/IMG-20250725-WA0004.jpg" alt="Service 12"></div>
+              <div class="gallery-item" role="listitem"><img loading="lazy" tabindex="0" src="Images/IMG_3659.png" alt="IMG 3659"></div>
+              <div class="gallery-item" role="listitem"><img loading="lazy" tabindex="0" src="Images/IMG_3660.png" alt="IMG 3660"></div>
+              <div class="gallery-item" role="listitem"><img loading="lazy" tabindex="0" src="Images/IMG_3661.png" alt="IMG 3661"></div>
+              <div class="gallery-item" role="listitem"><img loading="lazy" tabindex="0" src="Images/IMG_3662.png" alt="IMG 3662"></div>
+              <div class="gallery-item" role="listitem"><img loading="lazy" tabindex="0" src="Images/IMG_3664.png" alt="IMG 3664"></div>
+              <div class="gallery-item" role="listitem"><img loading="lazy" tabindex="0" src="Images/IMG_3665.png" alt="IMG 3665"></div>
+              <div class="gallery-item" role="listitem"><img loading="lazy" tabindex="0" src="Images/IMG_3665 (1).png" alt="IMG 3665 2"></div>
+              <div class="gallery-item" role="listitem"><img loading="lazy" tabindex="0" src="Images/IMG_3666.png" alt="IMG 3666"></div>
+              <div class="gallery-item" role="listitem"><img loading="lazy" tabindex="0" src="Images/IMG_3667.jpg" alt="IMG 3667"></div>
+              <div class="gallery-item" role="listitem"><img loading="lazy" tabindex="0" src="Images/seat vaccuming.png" alt="Seat Vaccuming"></div>
+              <div class="gallery-item" role="listitem"><img loading="lazy" tabindex="0" src="Images/services.jpg" alt="Services"></div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </section>
+
+  <section class="why-choose-us" id="about">
+    <div class="container">
+      <div class="section-header">
+        <div class="badge">Why Choose Us</div>
+        <h2 class="section-title">What Makes Spotless Different</h2>
+        <p class="section-description">
+          We don't just clean—we build lasting relationships with our clients through exceptional service, reliability,
+          and attention to detail.
+        </p>
+      </div>
+      <div class="benefits-grid">
+        <div class="benefit-card">
+          <div class="benefit-icon"><i class="fa-solid fa-shield"></i></div>
+          <h3 class="benefit-title">Fully Licensed & Insured</h3>
+          <p class="benefit-description">Complete protection and peace of mind with our comprehensive insurance
+            coverage.</p>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-icon"><i class="fa-solid fa-clock"></i></div>
+          <h3 class="benefit-title">Flexible Scheduling</h3>
+          <p class="benefit-description">Available 24/7 to fit your busy schedule. Emergency cleaning services
+            available.</p>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-icon"><i class="fa-solid fa-users"></i></div>
+          <h3 class="benefit-title">Trained Professionals</h3>
+          <p class="benefit-description">Our team is thoroughly vetted, trained, and equipped with the latest cleaning
+            techniques.</p>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-icon"><i class="fa-solid fa-medal"></i></div>
+          <h3 class="benefit-title">100% Satisfaction Guarantee</h3>
+          <p class="benefit-description">Not happy? We'll return within 24 hours to make it right, completely free.</p>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-icon"><i class="fa-solid fa-leaf"></i></div>
+          <h3 class="benefit-title">Eco-Friendly Products</h3>
+          <p class="benefit-description">Safe, non-toxic cleaning products that protect your family and the environment.
+          </p>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-icon"><i class="fa-solid fa-phone"></i></div>
+          <h3 class="benefit-title">Excellent Customer Service</h3>
+          <p class="benefit-description">Responsive support team available to address your concerns and questions
+            promptly.</p>
+        </div>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-item">
+          <div class="stat-number">500+</div>
+          <div class="stat-label">Happy Clients</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number">5+</div>
+          <div class="stat-label">Years Experience</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number">1000+</div>
+          <div class="stat-label">Cleanings Done</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number">24/7</div>
+          <div class="stat-label">Support Available</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="testimonials" id="testimonials">
+    <div class="container">
+      <div class="section-header">
+        <div class="badge">Customer Reviews</div>
+        <h2 class="section-title">What Our Clients Say</h2>
+        <p class="section-description">
+          Don't just take our word for it. Here's what our satisfied customers have to say about our cleaning services.
+        </p>
+      </div>
+      <div class="testimonials-grid">
+        <div class="testimonial-card">
+          <div class="testimonial-header">
+            <span class="stars">⭐⭐⭐⭐⭐
+              
+            </span>
+            <span class="quote-icon">"</span>
+          </div>
+          <p class="testimonial-text">
+            "Spotless Cleaning transformed our office! Professional, punctual, and thorough. Our workspace
+            
+             has never
+            been cleaner."
+          </p>
+          <div class="testimonial-footer">
+            <div class="testimonial-author">
+              <div class="author-name">Sarah Wanjiku</div>
+              <div class="author-location">Nairobi</div>
+            </div>
+            <div class="service-badge">Office Cleaning</div>
+          </div>
+        </div>
+        <div class="testimonial-card">
+          <div class="testimonial-header">
+            <span class="stars">⭐⭐⭐⭐⭐</span>
+            <span class="quote-icon">"</span>
+          </div>
+          <p class="testimonial-text">
+            "Exceptional home cleaning service. The team is reliable and uses eco-friendly products. Highly recommend!"
+          </p>
+          <div class="testimonial-footer">
+            <div class="testimonial-author">
+              <div class="author-name">John Mwangi</div>
+              <div class="author-location">Karen</div>
+            </div>
+            <div class="service-badge">Home Cleaning</div>
+          </div>
+        </div>
+        <div class="testimonial-card">
+          <div class="testimonial-header">
+            <span class="stars">⭐⭐⭐⭐⭐</span>
+            <span class="quote-icon">"</span>
+          </div>
+          <p class="testimonial-text">
+            "Their deep cleaning service is amazing! My carpets and upholstery look brand new. Worth every shilling."
+          </p>
+          <div class="testimonial-footer">
+            <div class="testimonial-author">
+              <div class="author-name">Grace Njeri</div>
+              <div class="author-location">Westlands</div>
+            </div>
+            <div class="service-badge">Deep Cleaning</div>
+          </div>
+        </div>
+        <div class="testimonial-card">
+          <div class="testimonial-header">
+            <span class="stars">⭐⭐⭐⭐⭐</span>
+            <span class="quote-icon">"</span>
+          </div>
+          <p class="testimonial-text">
+            "Professional pest control service. No more termite problems! Quick response and effective treatment."
+          </p>
+          <div class="testimonial-footer">
+            <div class="testimonial-author">
+              <div class="author-name">David Kiprotich</div>
+              <div class="author-location">Kilimani</div>
+            </div>
+            <div class="service-badge">Pest Control</div>
+          </div>
+        </div>
+        <div class="testimonial-card">
+          <div class="testimonial-header">
+            <span class="stars">⭐⭐⭐⭐⭐</span>
+            <span class="quote-icon">"</span>
+          </div>
+          <p class="testimonial-text">
+            "Their compound cleaning is a top-notch. My compound has never looked better. Very affordable too!"
+          </p>
+          <div class="testimonial-footer">
+            <div class="testimonial-author">
+              <div class="author-name">Mary Akinyi</div>
+              <div class="author-location">Lavington</div>
+            </div>
+            <div class="service-badge">Compound Cleaning</div>
+          </div>
+        </div>
+        <div class="testimonial-card">
+          <div class="testimonial-header">
+            <span class="stars">⭐⭐⭐⭐⭐</span>
+            <span class="quote-icon">"</span>
+          </div>
+          <p class="testimonial-text">
+            "Upholstery service at my place was exceptional. Professional job every time. Highly satisfied!"
+          </p>
+          <div class="testimonial-footer">
+            <div class="testimonial-author">
+              <div class="author-name">Peter Mbugua</div>
+              <div class="author-location">Parklands</div>
+            </div>
+            <div class="service-badge">Upholstery Cleaning</div>
+          </div>
+        </div>
+      </div>
+      <div class="overall-rating">
+        <div class="rating-content">
+          <span class="stars">⭐⭐⭐⭐⭐</span>
+          <span class="rating-number">4.9/5</span>
+          <p class="rating-text">Average rating from <span class="highlight">500+ happy customers</span></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="contact-cta" id="contact">
+    <div class="container">
+      <div class="cta-content">
+        <div class="cta-text">
+          <h2 class="cta-title">Ready to Experience Spotless Cleaning?</h2>
+          <p class="cta-description">
+            Contact us today for a free quote and let us make your space shine. Professional, reliable, and affordable
+            cleaning services in Kenya.
+          </p>
+          <div class="cta-buttons">
+            <button class="btn btn-secondary btn-lg">Get Free Quote</button>
+            <button class="btn btn-outline-white btn-lg">Call: 0743 413 943</button>
+          </div>
+        </div>
+        <div class="contact-cards">
+          <div class="contact-card">
+            <div class="contact-icon"><i class="fa-solid fa-phone"></i></div>
+            <div class="contact-info">
+              <div class="contact-title">Call Us</div>
+              <div class="contact-detail">0743 413 943</div>
+            </div>
+          </div>
+          <div class="contact-card">
+            <div class="contact-icon"><i class="fa-brands fa-whatsapp"></i></div>
+            <div class="contact-info">
+              <div class="contact-title">WhatsApp</div>
+              <div class="contact-detail">+254 743 413 943</div>
+            </div>
+          </div>
+          <div class="contact-card">
+            <div class="contact-icon"><i class="fa-solid fa-location-dot"></i></div>
+            <div class="contact-info">
+              <div class="contact-title">Service Areas</div>
+              <div class="contact-detail">Nairobi & Surrounding Areas</div>
+            </div>
+          </div>
+          <div class="contact-card">
+            <div class="contact-icon"><i class="fa-solid fa-clock"></i></div>
+            <div class="contact-info">
+              <div class="contact-title">Working Hours</div>
+              <div class="contact-detail">24/7 Available</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-section">
+          <img src="Images/spotless-logo design.jpg" alt="Spotless Cleaning Services" class="footer-logo">
+          <p class="footer-description">
+            Professional cleaning services in Kenya. We make your home and office spotless with reliable, affordable,
+            and eco-friendly solutions.
+          </p>
+          <div class="social-links">
+            <a href="https://facebook.com/thespotlesscompany" target="_blank" class="social-link"><i
+                class="fa-brands fa-facebook"></i></a>
+            <a href="https://instagram.com/spotlesscompany.ke" target="_blank" class="social-link"><i
+                class="fa-brands fa-instagram"></i></a>
+            <a href="https://wa.me/254743413943" target="_blank" class="social-link"><i
+                class="fa-brands fa-whatsapp"></i></a>
+          </div>
+        </div>
+        <div class="footer-section footer-logo-bottom" style="text-align:center;">
+          <img src="Images/spotless-logo design.jpg" alt="Spotless Cleaning Services Logo"
+            style="height:3rem;width:auto;filter:brightness(0) invert(1);margin-top:1rem;">
+        </div>
+        <div class="footer-section">
+          <h3 class="footer-title">Quick Links</h3>
+          <ul class="footer-links">
+            <li><a href="#home">Home</a></li>
+            <li><a href="#about">About Us</a></li>
+            <li><a href="#services">Services</a></li>
+            <li><a href="#testimonials">Testimonials</a></li>
+            <li><a href="#contact">Contact</a></li>
+          </ul>
+        </div>
+        <div class="footer-section">
+          <h3 class="footer-title">Our Services</h3>
+          <ul class="footer-links">
+            <li><a href="#services">Home Cleaning</a></li>
+            <li><a href="#services">Office Cleaning</a></li>
+            <li><a href="#services">Deep Cleaning</a></li>
+            <li><a href="#services">Pest Control</a></li>
+            <li><a href="#services">Garden Maintenance</a></li>
+            <li><a href="#services">Car Washing</a></li>
+          </ul>
+        </div>
+        <div class="footer-section">
+          <h3 class="footer-title">Contact Info</h3>
+          <div class="contact-info-list">
+            <div class="contact-item">
+              <span class="contact-icon"><i class="fa-solid fa-phone"></i></span>
+              <span>0743 413 943</span>
+            </div>
+            <div class="contact-item">
+              <span class="contact-icon"><i class="fa-solid fa-envelope"></i></span>
+              <span>spotlesscleaners.ke@gmail.com</span>
+            </div>
+            <div class="contact-item">
+              <span class="contact-icon"><i class="fa-solid fa-location-dot"></i></span>
+              <span>Nairobi, Kenya</span>
+            </div>
+          </div>
+          <button class="btn btn-secondary"><i class="fa-brands fa-whatsapp"></i> WhatsApp Us</button>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <div class="footer-bottom-content">
+          <div class="copyright">
+            © 2025 Spotless Cleaning Services. All rights reserved.
+          </div>
+          <div class="footer-bottom-links">
+            <a href="#">Privacy Policy</a>
+            <a href="#">Terms of Service</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+
+</html>
